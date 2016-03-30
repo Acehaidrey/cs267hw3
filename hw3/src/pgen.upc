@@ -177,12 +177,12 @@ int main(int argc, char *argv[]){
 		for(int t = 0; t < THREADS; ++ t) {
 			char str[50];
 			sprintf(str, "pgen%d.out", t);
-			FILE*in_file = fopen(str, "r");
+			FILE*input = fopen(str, "r");
 			
-			while(fscanf(in_file, "%s", cur_contig) == 1)
+			while(fscanf(input, "%s", cur_contig) == 1)
 				fprintf(output, "%s\n", cur_contig);
 			 
-			fclose(in_file);
+			fclose(input);
 		}
 		
 		fclose(output);
