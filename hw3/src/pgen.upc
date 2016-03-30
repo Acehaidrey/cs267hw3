@@ -35,6 +35,8 @@ int main(int argc, char *argv[]){
 		skip += MYTHREAD; 
 	} else {
 		skip += (nKmers % THREADS);
+	
+
 	}
 	int64_t read_char = lines * LINE_SIZE;
 	int64_t skip_char = skip * LINE_SIZE;

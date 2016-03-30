@@ -7,7 +7,7 @@
 #include <math.h> 
 #include <string.h>
 #include <upc.h>
-#include "new_contig_generation.h"
+#include "contig_generation.h"
 
 /* Auxiliary function for computing hash values */
 int64_t hashseq(int64_t  hashtable_size, char *seq, int size)
