@@ -131,7 +131,6 @@ int main(int argc, char *argv[]){
 		if (left_ext != 'F') continue;
 
 		memcpy(cur_contig, &buffer[point], KMER_LENGTH * sizeof(char));
-		
 		int64_t posInContig = KMER_LENGTH;
 		char right_ext = (char) buffer[point+KMER_LENGTH+2];
 		
@@ -139,7 +138,7 @@ int main(int argc, char *argv[]){
 		while(right_ext != 'F' && right_ext != 0) {
 			cur_contig[posInContig] = right_ext;
 			posInContig++;
-			right_ext = lookup_kmer_right(memory_heap, next, hash_table, nKmers,
+			right_ext = lookup_kmer_rext(memory_heap, next, hash_table, nKmers,
 																	 (const unsigned char *) &cur_contig[posInContig-KMER_LENGTH]);
 		}
 		

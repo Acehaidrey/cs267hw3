@@ -28,7 +28,7 @@ int64_t hashkmer(int64_t  hashtable_size, char *seq)
 }
 
 /* Looks up a kmer in the hash table and returns a pointer to that entry */
-char lookup_kmer_right(shared kmer_t* memory_heap, shared int64_t* next_index, 
+char lookup_kmer_rext(shared kmer_t* memory_heap, shared int64_t* next_index, 
                        shared int64_t* hash_table, int64_t tablesize, 
                        const unsigned char *kmer)
 {
@@ -36,14 +36,11 @@ char lookup_kmer_right(shared kmer_t* memory_heap, shared int64_t* next_index,
    packSequence(kmer, (unsigned char*) packedKmer, KMER_LENGTH);
    int64_t hashval = hashkmer(tablesize, (char*) packedKmer);
    
-   // start traverse
    int64_t curr_bucket = hash_table[hashval];
-   kmer_t tmp_kmer; // temporary storage
+   kmer_t tmp_kmer; 
    for (; curr_bucket != -1; ) {
-      // getch the global kmer to local memory
       upc_memget(&tmp_kmer, &memory_heap[curr_bucket], sizeof(kmer_t));
       
-      // compare
       if ( memcmp(packedKmer, tmp_kmer.kmer, KMER_PACKED_LENGTH * sizeof(char)) == 0 ) {
          return tmp_kmer.r_ext;
       }
