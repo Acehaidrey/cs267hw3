@@ -31,8 +31,6 @@ int main(int argc, char *argv[]){
 		skip += MYTHREAD; 
 	} else {
 		skip += (nKmers % THREADS);
-	
-
 	}
 	int64_t read_char = lines * LINE_SIZE;
 	int64_t skip_char = skip * LINE_SIZE;
@@ -104,7 +102,7 @@ int main(int argc, char *argv[]){
 	
 	char output_file_name[50];
 	sprintf(output_file_name, "pgen%d.out", MYTHREAD);
-	FILE *output = fopen(output_file_name, "w"); // asynchronized & independent output
+	FILE *output = fopen(output_file_name, "w");
 	
 	point = 0;
 	for (;  point < lines * LINE_SIZE; point += LINE_SIZE) {
@@ -143,26 +141,20 @@ int main(int argc, char *argv[]){
 	upc_barrier;
 	traversalTime += gettime();
 
-#ifdef SINGLE_OUTPUT_FILE
-
 	if(MYTHREAD == 0) {
 		output = fopen("pgen.out", "w");
 		
-		for(int t = 0; t < THREADS; ++ t) {
-			char str[50];
-			sprintf(str, "pgen%d.out", t);
+		for(int i = 0; i < THREADS; ++ i) {
+			char str[100];
+			sprintf(str, "pgen%d.out", i);
 			FILE*input = fopen(str, "r");
-			
-			while(fscanf(input, "%s", cur_contig) == 1)
-				fprintf(output, "%s\n", cur_contig);
-			 
+			while(fscanf(input, "%s", cur_contig) == 1) {
+				fprintf(output, "%s\n", cur_contig); 
+			}
 			fclose(input);
 		}
-		
 		fclose(output);
 	}
-
-#endif
 
 
 	/** Print timing and output info **/
