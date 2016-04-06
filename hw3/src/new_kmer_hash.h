@@ -9,7 +9,6 @@
 #include <upc.h>
 #include "contig_generation.h"
 
-/* Auxiliary function for computing hash values */
 int64_t hashseq(int64_t  hashtable_size, char *seq, int size)
 {
    unsigned long hashval;
@@ -21,13 +20,11 @@ int64_t hashseq(int64_t  hashtable_size, char *seq, int size)
    return hashval % hashtable_size;
 }
 
-/* Returns the hash value of a kmer */
 int64_t hashkmer(int64_t  hashtable_size, char *seq)
 {
    return hashseq(hashtable_size, seq, KMER_PACKED_LENGTH);
 }
 
-/* Looks up a kmer in the hash table and returns a pointer to that entry */
 char lookup_kmer_rext(shared kmer_t* memory_heap, shared int64_t* next_index, 
                        shared int64_t* hash_table, int64_t tablesize, 
                        const unsigned char *kmer)
@@ -50,26 +47,22 @@ char lookup_kmer_rext(shared kmer_t* memory_heap, shared int64_t* next_index,
     return 0;
 }
 
-/* Adds a kmer and its extensions in the hash table (note that a memory heap should be preallocated. ) */
 int add_kmer(shared int64_t* next_index, int64_t k, int nKmer,
              shared int64_t* hash_table,
              shared kmer_t * memory_heap, 
              const unsigned char *kmer, char left_ext, char right_ext)
 {
-   /* Pack a k-mer sequence appropriately */
    char packedKmer[KMER_PACKED_LENGTH];
    packSequence(kmer, (unsigned char*) packedKmer, KMER_LENGTH);
    int64_t hashval = hashkmer(nKmer, (char*) packedKmer);
    
-   kmer_t tmp_kmer;// temp storage
+   kmer_t tmp_kmer;
    
-   /* Add the contents to the appropriate kmer struct in the heap */
    memcpy(tmp_kmer.kmer, packedKmer, KMER_PACKED_LENGTH * sizeof(char));
    tmp_kmer.l_ext = left_ext;
    tmp_kmer.r_ext = right_ext;
    upc_memput(&memory_heap[k], &tmp_kmer, sizeof(kmer_t));
    
-   /* insert k to the end of entry_list at hashtable[hashval] */
    int64_t ptr;
    ptr = bupc_atomicI64_cswap_strict((shared void*)(&hash_table[hashval]), -1, k);
    while(ptr != -1) {

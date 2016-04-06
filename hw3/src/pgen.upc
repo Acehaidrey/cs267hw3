@@ -6,12 +6,8 @@
 #include <time.h>
 #include <upc.h>
 #include <upc_io.h>
-
 #include "packingDNAseq.h"
 #include "new_kmer_hash.h"
-
-
-//#define SINGLE_OUTPUT_FILE
 
 
 int main(int argc, char *argv[]){
@@ -48,14 +44,9 @@ int main(int argc, char *argv[]){
 	upc_all_fseek(input, skip_char*sizeof(unsigned char), UPC_SEEK_SET);
 	int64_t cur_chars_read = upc_all_fread_local(input, buffer, sizeof(unsigned char), read_char,
 																							 UPC_IN_ALLSYNC | UPC_OUT_ALLSYNC);
-	// All the data are stored in  * buffer *
 	
-	// close the open file
 	upc_barrier;
 	upc_all_fclose(input);
-	
-	
-	//printf("Reading Finished on Thread#%d of %d threads.\n", MYTHREAD, THREADS);
 	
 	
 	upc_barrier;
@@ -67,30 +58,24 @@ int main(int argc, char *argv[]){
 	// Your code for graph construction here //
 	///////////////////////////////////////////
 	
-	//int ok=1;
 	
-	/* Initialize lookup table that will be used for the DNA packing routines */
 	 init_LookupTable();
 	
-	// generate hash table and heap
 	shared int64_t* next = (shared int64_t*)upc_all_alloc(nKmers, sizeof(int64_t));
 	shared kmer_t* memory_heap = (shared kmer_t*)upc_all_alloc(nKmers, sizeof(kmer_t)); 
 	
-	// initialize hash_table
 	shared int64_t* hash_table = (shared int64_t*)upc_all_alloc(nKmers, sizeof(int64_t));
 	int64_t i;
-	upc_forall(i=0; i<nKmers; i++; &hash_table[i]) // initial hash table
+	upc_forall(i=0; i<nKmers; i++; &hash_table[i])
 		hash_table[i] = -1;
-	upc_forall(i=0; i<nKmers; i++; &next[i]) // initial next index
+	upc_forall(i=0; i<nKmers; i++; &next[i]) 
 		next[i] = -1;
 	
-	upc_barrier; // need to synchronize before we actually start!
-	
-	int64_t k = skip; // global kmer index
+	upc_barrier; 
+	int64_t k = skip; 
 	int64_t point = 0;
 	
 	
-//  i = 0; // test purpose
 	char left_ext, right_ext;
 	
 	while (point < cur_chars_read) {
@@ -105,7 +90,6 @@ int main(int argc, char *argv[]){
 	upc_barrier;
 	constrTime += gettime();
 
-	//printf("Building Finished on Thread#%d of %d threads.\n", MYTHREAD, THREADS);
 
 	/** Graph traversal **/
 	traversalTime -= gettime();
@@ -113,9 +97,6 @@ int main(int argc, char *argv[]){
 	// Your code for graph traversal and output printing here //
 	// Save your output to "pgen.out"                         //
 	////////////////////////////////////////////////////////////
-	
-	
-	//ok=1;
 	
 	
 	
@@ -134,7 +115,6 @@ int main(int argc, char *argv[]){
 		int64_t posInContig = KMER_LENGTH;
 		char right_ext = (char) buffer[point+KMER_LENGTH+2];
 		
-		// Keep traversing the graph
 		while(right_ext != 'F' && right_ext != 0) {
 			cur_contig[posInContig] = right_ext;
 			posInContig++;
@@ -143,20 +123,14 @@ int main(int argc, char *argv[]){
 		}
 		
 		
-		// print the contig
 		cur_contig[posInContig] = '\0';
 		fprintf(output, "%s\n", cur_contig);
 	}
 	
-	// close the output file
 	fclose(output);
 	
 	
-	// clean the allocated memory
 	upc_barrier;
-	
-	
-	//printf("Traversal Finished on Thread#%d of %d threads.\n", MYTHREAD, THREADS);
 	
 	
 	if(MYTHREAD == 0) {
@@ -169,7 +143,6 @@ int main(int argc, char *argv[]){
 	upc_barrier;
 	traversalTime += gettime();
 
-// hack implementation to produce a single output file for correctness checking
 #ifdef SINGLE_OUTPUT_FILE
 
 	if(MYTHREAD == 0) {
